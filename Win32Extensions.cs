@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using TerraFX.Interop.Windows;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Borderless1942;
 
@@ -18,56 +21,59 @@ public static class Win32Extensions
 
 	public unsafe static Window GetMainWindow(this Process process)
 	{
-		var handle = new HWND(process.MainWindowHandle.ToPointer());
-		return new(handle);
+		return new((nint)process.MainWindowHandle);
 	}
 }
 
-public unsafe readonly record struct Window(HWND Handle)
+public readonly record struct Window(nint Handle)
 {
+	private HWND Win32Handle => new(Handle);
+
 	public Monitor GetCurrentMonitor()
 	{
-		var handle = Windows.MonitorFromWindow(Handle, 0);
+		nint handle = PInvoke.MonitorFromWindow(Win32Handle, 0);
 		return new(handle);
 	}
 
 	public void SetPosition(int x, int y)
 	{
-		uint flags = SWP.SWP_NOSIZE | SWP.SWP_NOZORDER | SWP.SWP_NOACTIVATE | SWP.SWP_NOOWNERZORDER | SWP.SWP_NOSENDCHANGING | SWP.SWP_FRAMECHANGED;
-		Windows.SetWindowPos(Handle, HWND.HWND_TOPMOST, x, y, 0, 0, flags);
-		Windows.SendMessage(Handle, WM.WM_EXITSIZEMOVE, default, default);
+		var flags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE |
+			SET_WINDOW_POS_FLAGS.SWP_NOOWNERZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSENDCHANGING | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED;
+		PInvoke.SetWindowPos(Win32Handle, PInvoke.HWND_TOPMOST, x, y, 0, 0, flags);
+		PInvoke.SendMessage(Win32Handle, PInvoke.WM_EXITSIZEMOVE, default, default);
 	}
 
 	public Rectangle GetBounds()
 	{
 		var windowInfo = new WINDOWINFO();
-		Windows.GetWindowInfo(Handle, &windowInfo);
+		PInvoke.GetWindowInfo(Win32Handle, ref windowInfo);
 		return Rectangle.From(windowInfo.rcWindow);
 	}
 
 	public void RemoveBorders()
 	{
-		var style = Windows.GetWindowLong(Handle, GWL.GWL_STYLE);
-		style &= ~(WS.WS_THICKFRAME | WS.WS_DLGFRAME | WS.WS_BORDER);
-		Windows.SetWindowLong(Handle, GWL.GWL_STYLE, style);
+		var style = PInvoke.GetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+		style &= ~(int)(WINDOW_STYLE.WS_THICKFRAME | WINDOW_STYLE.WS_DLGFRAME | WINDOW_STYLE.WS_BORDER);
+		_ = PInvoke.SetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_STYLE, style);
 
-		style = Windows.GetWindowLong(Handle, GWL.GWL_EXSTYLE);
-		style &= ~(WS.WS_EX_DLGMODALFRAME | WS.WS_EX_WINDOWEDGE | WS.WS_EX_CLIENTEDGE | WS.WS_EX_STATICEDGE);
-		Windows.SetWindowLong(Handle, GWL.GWL_EXSTYLE, style);
-
-		Windows.SendMessage(Handle, WM.WM_EXITSIZEMOVE, default, default);
+		style = PInvoke.GetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+		style &= ~(int)(WINDOW_EX_STYLE.WS_EX_DLGMODALFRAME | WINDOW_EX_STYLE.WS_EX_WINDOWEDGE | WINDOW_EX_STYLE.WS_EX_CLIENTEDGE | WINDOW_EX_STYLE.WS_EX_STATICEDGE);
+		_ = PInvoke.SetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, style);
+		PInvoke.SendMessage(Win32Handle, PInvoke.WM_EXITSIZEMOVE, default, default);
 	}
 }
 
-public readonly record struct Monitor(HMONITOR Handle)
+public readonly record struct Monitor(nint Handle)
 {
+	private HMONITOR Win32Handle => new(Handle);
+
 	public unsafe Rectangle GetBounds()
 	{
 		var monitorInfo = new MONITORINFO
 		{
 			cbSize = (uint)sizeof(MONITORINFO)
 		};
-		Windows.GetMonitorInfoA(Handle, &monitorInfo);
+		PInvoke.GetMonitorInfo(Win32Handle, ref monitorInfo);
 		return Rectangle.From(monitorInfo.rcMonitor);
 	}
 }
@@ -78,5 +84,5 @@ public readonly record struct Rectangle(int Left, int Top, int Right, int Bottom
 	public int Width => Right - Left;
 	public int Height => Bottom - Top;
 
-	public static Rectangle From(RECT rectangle) => Unsafe.As<RECT, Rectangle>(ref rectangle);
+	internal static Rectangle From(RECT rectangle) => Unsafe.As<RECT, Rectangle>(ref rectangle);
 }

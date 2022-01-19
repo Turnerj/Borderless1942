@@ -1,0 +1,11 @@
+﻿MonitorFromWindow
+GetMonitorInfo
+SetWindowPos
+SendMessage
+GetWindowInfo
+SetWindowLong
+GetWindowLong
+WINDOW_STYLE
+WINDOW_EX_STYLE
+HWND_TOPMOST
+WM_EXITSIZEMOVE
