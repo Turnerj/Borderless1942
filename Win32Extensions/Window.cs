@@ -1,31 +1,11 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Borderless1942;
+namespace Borderless1942.Win32Extensions;
 
-public static class Win32Extensions
-{
-	public static async ValueTask<Window> WaitForMainWindowAsync(this Process process)
-	{
-		while (process.MainWindowHandle == IntPtr.Zero)
-		{
-			await Task.Delay(100);
-		}
-		return process.GetMainWindow();
-	}
-
-	public unsafe static Window GetMainWindow(this Process process)
-	{
-		return new((nint)process.MainWindowHandle);
-	}
-}
-
-public readonly record struct Window(nint Handle)
+public readonly record struct Window(int ProcessId, nint Handle)
 {
 	private HWND Win32Handle => new(Handle);
 
@@ -50,6 +30,12 @@ public readonly record struct Window(nint Handle)
 		return Rectangle.From(windowInfo.rcWindow);
 	}
 
+	public SafeHandle OnResize(Action<Window> handler)
+	{
+		var self = this;
+		return Events.AddEventHandler(PInvoke.EVENT_SYSTEM_MOVESIZEEND, new EventTarget(Handle, ProcessId), eventArgs => handler(self));
+	}
+
 	public void RemoveBorders()
 	{
 		var style = PInvoke.GetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
@@ -61,28 +47,4 @@ public readonly record struct Window(nint Handle)
 		_ = PInvoke.SetWindowLong(Win32Handle, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, style);
 		PInvoke.SendMessage(Win32Handle, PInvoke.WM_EXITSIZEMOVE, default, default);
 	}
-}
-
-public readonly record struct Monitor(nint Handle)
-{
-	private HMONITOR Win32Handle => new(Handle);
-
-	public unsafe Rectangle GetBounds()
-	{
-		var monitorInfo = new MONITORINFO
-		{
-			cbSize = (uint)sizeof(MONITORINFO)
-		};
-		PInvoke.GetMonitorInfo(Win32Handle, ref monitorInfo);
-		return Rectangle.From(monitorInfo.rcMonitor);
-	}
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public readonly record struct Rectangle(int Left, int Top, int Right, int Bottom)
-{
-	public int Width => Right - Left;
-	public int Height => Bottom - Top;
-
-	internal static Rectangle From(RECT rectangle) => Unsafe.As<RECT, Rectangle>(ref rectangle);
 }
