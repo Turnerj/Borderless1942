@@ -2,17 +2,6 @@
 
 Provides borderless fullscreen support for Battlefield 1942.
 
-## Why go borderless?
-
-Basically I was having issues running the game in fullscreen on a machine of mine.
-The game would run fine in the menu but would crash loading the map - simply by running it in a window fixed that.
-
-Running in a window though was a bit crappy with the border and where it positioned itself on the screen.
-Borderless 1942 removes the border and repositions the window based on the window size so it is always in the center.
-
-BF1942 throws an extra curveball by changing process when you exit out of a map.
-Borderless 1942 also tracks this and reapplies the border and positioning logic on the new process.
-
 ## Installation
 
 1. [Download the latest release](https://github.com/Turnerj/Borderless1942/releases/latest) into the directory where `BF1942.exe` is located.
