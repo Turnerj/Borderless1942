@@ -50,6 +50,8 @@ updating the window position and removing the borders.
 
 To center the window though, it also access Win32 monitor APIs to get the size for the primary monitor for the window.
 
+I dive a bit deeper into how it all came to be [in my blog post](https://turnerj.com/blog/fixing-bf1942-with-win32).
+
 ### Do I need .NET 6 installed to use Borderless 1942?
 
 Nope! It is a self-contained executable - it contains everything it needs to run.
