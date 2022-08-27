@@ -35,11 +35,11 @@ MainLoop:
 			if (matchingProcesses.Length == 1)
 			{
 				process = matchingProcesses[0];
-				Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Changed] [{oldProcessId} -> {process.Id}]");
-				if (process.HasExited && process.MainWindowHandle == IntPtr.Zero)
+				if (process.HasExited)
 				{
 					break;
 				}
+				Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Changed] [{oldProcessId} -> {process.Id}]");
 				window = await process.WaitForMainWindowAsync();
 				window.RemoveBorders();
 				goto MainLoop;
