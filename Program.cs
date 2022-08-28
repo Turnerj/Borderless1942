@@ -12,7 +12,7 @@ foreach (var arg in args)
 }
 var process = Process.Start(processStartInfo)!;
 var keepAlive = true;
-Console.WriteLine($"Process has started ({process.Id})");
+Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Started] [{process.Id}]");
 
 // Wait for initial window handle
 var window = await process.WaitForMainWindowAsync();
@@ -29,13 +29,17 @@ MainLoop:
 	{
 		var oldProcessId = process.Id;
 		var retryCount = 0;
-		while (retryCount < 2)
+		while (retryCount < 3)
 		{
 			var matchingProcesses = Process.GetProcessesByName("BF1942");
 			if (matchingProcesses.Length == 1)
 			{
 				process = matchingProcesses[0];
-				Console.WriteLine($"Process has changed ({oldProcessId} -> {process.Id})");
+				if (process.HasExited)
+				{
+					break;
+				}
+				Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Changed] [{oldProcessId} -> {process.Id}]");
 				window = await process.WaitForMainWindowAsync();
 				window.RemoveBorders();
 				goto MainLoop;
@@ -44,8 +48,8 @@ MainLoop:
 			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
 		keepAlive = false;
-		Console.WriteLine($"Process has exited ({oldProcessId})");
-	}
+		Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Exited]");
+    }
 }
 
 static void UpdateWindowPosition(Window window)
