@@ -1,6 +1,7 @@
 ﻿using Borderless1942;
 using System.Diagnostics;
 
+Console.WriteLine("Borderless1942: Runs BF1942 in a Borderless Window");
 // Start Process
 var processStartInfo = new ProcessStartInfo
 {
@@ -12,7 +13,7 @@ foreach (var arg in args)
 }
 var process = Process.Start(processStartInfo)!;
 var keepAlive = true;
-Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Started] [{process.Id}]");
+Console.WriteLine($"Borderless1942: BF1942 Process Has Started [{process.Id}]");
 
 // Wait for initial window handle
 var window = await process.WaitForMainWindowAsync();
@@ -39,7 +40,7 @@ MainLoop:
 				{
 					break;
 				}
-				Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Changed] [{oldProcessId} -> {process.Id}]");
+				Console.WriteLine($"Borderless1942: BF1942 Process Has Changed [{oldProcessId} -> {process.Id}]");
 				window = await process.WaitForMainWindowAsync();
 				window.RemoveBorders();
 				goto MainLoop;
@@ -48,7 +49,7 @@ MainLoop:
 			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
 		keepAlive = false;
-		Console.WriteLine($"[Borderless1942]: [{DateTime.Now:yyyy-MM-dd - hh:mm:ss tt}] [BF1942 Process Has Exited]");
+		Console.WriteLine("Borderless1942: BF1942 Process Has Exited");
     }
 }
 
