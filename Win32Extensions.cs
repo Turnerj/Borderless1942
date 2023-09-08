@@ -39,7 +39,7 @@ public readonly record struct Window(nint Handle)
 	{
 		var flags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE |
 			SET_WINDOW_POS_FLAGS.SWP_NOOWNERZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSENDCHANGING | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED;
-		PInvoke.SetWindowPos(Win32Handle, PInvoke.HWND_TOPMOST, x, y, 0, 0, flags);
+		PInvoke.SetWindowPos(Win32Handle, HWND.HWND_TOPMOST, x, y, 0, 0, flags);
 		PInvoke.SendMessage(Win32Handle, PInvoke.WM_EXITSIZEMOVE, default, default);
 	}
 
